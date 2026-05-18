@@ -4,7 +4,7 @@ dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 const express = require("express");
 const dotenv = require("dotenv");
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 dotenv.config()
 const cors = require("cors")
 
@@ -47,6 +47,14 @@ app.get('/tutor', async (req, res) => {
         const result = await tutorCollection.insertOne(tutorData)
         res.json(result)
 
+    })
+
+
+    app.get("/tutor/:id" , async (req,res) =>{
+        const {id} = req.params
+
+        const result = await tutorCollection.findOne({_id: new ObjectId(id)})
+        res.json(result)
     })
 
 
