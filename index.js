@@ -58,6 +58,27 @@ app.get('/tutor', async (req, res) => {
     })
 
 
+    app.patch("/tutor/:id", async (req,res) =>{
+        const {id} = req.params
+        const updatedData = req.body
+
+        const result = await tutorCollection.updateOne(
+            {_id: new ObjectId(id)},
+            {$set: updatedData}
+        )
+        res.json(result)
+
+    })
+
+
+    app.delete('/tutor/:id', async (req,res) =>{
+    
+      const {id} = req.params;
+      const result = await tutorCollection.deleteOne({_id: new ObjectId(id) })
+      res.json(result)
+
+    })
+
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
