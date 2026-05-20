@@ -34,7 +34,7 @@ async function run() {
 // destinationCollection=tutorCollection
     const tutorCollection = db.collection("tutors")
 
-    const bookingCollection = db.collection("bookingss")
+    const bookingCollection = db.collection("bookings")
 
   
 app.get('/tutor', async (req, res) => {
@@ -88,6 +88,28 @@ app.get('/tutor', async (req, res) => {
         res.json(result)
 
     })
+
+
+app.get("/booking/:userId", async (req, res) => {
+
+    const { userId } = req.params
+
+    const result = await bookingCollection.find({userId:userId}).toArray()
+
+    res.json(result)
+})
+
+
+app.delete('/booking/:bookingId', async (req, res) => {
+
+  const { bookingId } = req.params;
+  const result = await bookingCollection.deleteOne({
+    _id: new ObjectId(bookingId)
+  });
+
+  res.json(result);
+});
+
 
 
     await client.db("admin").command({ ping: 1 });
