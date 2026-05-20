@@ -28,11 +28,13 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
+    
     await client.connect();
-
     const db = client.db("MediQueue")
 // destinationCollection=tutorCollection
     const tutorCollection = db.collection("tutors")
+
+    const bookingCollection = db.collection("bookingss")
 
   
 app.get('/tutor', async (req, res) => {
@@ -76,6 +78,14 @@ app.get('/tutor', async (req, res) => {
       const {id} = req.params;
       const result = await tutorCollection.deleteOne({_id: new ObjectId(id) })
       res.json(result)
+
+    })
+
+
+    app.post("/booking", async(req,res) =>{
+        const bookingData = req.body
+        const result = await bookingCollection.insertOne(bookingData)
+        res.json(result)
 
     })
 
