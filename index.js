@@ -6,7 +6,8 @@ const express = require("express");
 const dotenv = require("dotenv");
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 dotenv.config()
-const cors = require("cors")
+const cors = require("cors");
+const { createRemoteJWKSet, jwtVerify } = require("jose-cjs");
 
 const uri = process.env.MONGODB_URI;
 
@@ -24,6 +25,35 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
+
+const JWKS = createRemoteJWKSet(new URL(`${process.env.CLIENT_URL}/api/auth/jwks`));
+
+const verifyToken = async (req,res,next)=> {
+  const authHeader = req?.headers.authorization;
+
+if(!authHeader){
+  return res.status(401).json({message: "unauthorized"});
+}
+
+  const token = authHeader.split(" ")[1]
+
+if(!token){
+  return res.status(401).json({message: "unauthorized"});
+}
+
+
+try {
+const {payload} = await jwtVerify(token, JWKS)
+console.log(payload)
+next()
+  
+} catch (error) {
+  return res.status(403).json({message: "Forbidden"});
+  
+}
+
+}
+
 
 
 async function run() {
@@ -52,7 +82,7 @@ app.get('/tutor', async (req, res) => {
     })
 
 
-    app.get("/tutor/:id" , async (req,res) =>{
+    app.get("/tutor/:id" ,verifyToken, async (req,res) =>{
         const {id} = req.params
 
         const result = await tutorCollection.findOne({_id: new ObjectId(id)})
@@ -60,7 +90,7 @@ app.get('/tutor', async (req, res) => {
     })
 
 
-    app.patch("/tutor/:id", async (req,res) =>{
+    app.patch("/tutor/:id", verifyToken, async (req,res) =>{
         const {id} = req.params
         const updatedData = req.body
 
@@ -73,7 +103,7 @@ app.get('/tutor', async (req, res) => {
     })
 
 
-    app.delete('/tutor/:id', async (req,res) =>{
+    app.delete('/tutor/:id',verifyToken, async (req,res) =>{
     
       const {id} = req.params;
       const result = await tutorCollection.deleteOne({_id: new ObjectId(id) })
@@ -82,7 +112,7 @@ app.get('/tutor', async (req, res) => {
     })
 
 
-    app.post("/booking", async(req,res) =>{
+    app.post("/booking", verifyToken,  async(req,res) =>{
         const bookingData = req.body
         const result = await bookingCollection.insertOne(bookingData)
         res.json(result)
@@ -90,7 +120,7 @@ app.get('/tutor', async (req, res) => {
     })
 
 
-app.get("/booking/:userId", async (req, res) => {
+app.get("/booking/:userId", verifyToken, async (req, res) => {
 
     const { userId } = req.params
 
@@ -100,7 +130,7 @@ app.get("/booking/:userId", async (req, res) => {
 })
 
 
-app.delete('/booking/:bookingId', async (req, res) => {
+app.delete('/booking/:bookingId',verifyToken, async (req, res) => {
 
   const { bookingId } = req.params;
   const result = await bookingCollection.deleteOne({
