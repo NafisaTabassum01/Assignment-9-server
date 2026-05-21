@@ -33,8 +33,8 @@ async function run() {
     const db = client.db("MediQueue")
 // destinationCollection=tutorCollection
     const tutorCollection = db.collection("tutors")
-
     const bookingCollection = db.collection("bookings")
+    // const myTutorCollection = db.collection("myTutors")
 
   
 app.get('/tutor', async (req, res) => {
@@ -109,6 +109,20 @@ app.delete('/booking/:bookingId', async (req, res) => {
 
   res.json(result);
 });
+
+
+
+///................... my tutor .................
+
+// 
+app.get("/tutor/user/:userId", async (req, res) => {
+  const { userId } = req.params;
+
+  const result = await tutorCollection.find({ userId }).toArray();
+
+  res.json(result);
+});
+
 
 
 
