@@ -125,6 +125,58 @@ app.get("/tutor/user/:userId", async (req, res) => {
 
 
 
+// ---------slot--------------
+
+app.patch("/tutor/slot/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const tutor = await tutorCollection.findOne({
+      _id: new ObjectId(id),
+    });
+
+    if (!tutor) {
+      return res.status(404).json({ message: "Tutor not found" });
+    }
+
+    const totalSlot = Number(tutor.TotalSlot || 0);
+
+    if (totalSlot <= 0) {
+      return res.status(400).json({
+        message: "Fully booked",
+      });
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const sessionDate = new Date(tutor.SessionStartingDate);
+    sessionDate.setHours(0, 0, 0, 0);
+
+    // 🔥 FIXED LOGIC
+    if (today > sessionDate) {
+      return res.status(400).json({
+        message: "Booking not available ",
+      });
+    }
+
+    await tutorCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $inc: { TotalSlot: -1 } }
+    );
+
+    res.json({
+      success: true,
+      message: "Slot updated",
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server crashed" });
+  }
+});
+
+
+
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
