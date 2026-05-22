@@ -30,12 +30,13 @@ const JWKS = createRemoteJWKSet(new URL(`${process.env.CLIENT_URL}/api/auth/jwks
 
 const verifyToken = async (req,res,next)=> {
   const authHeader = req?.headers.authorization;
-
+console.log("AUTH HEADER:", authHeader);
 if(!authHeader){
   return res.status(401).json({message: "unauthorized"});
 }
 
-  const token = authHeader.split(" ")[1]
+const token = authHeader.split(" ")[1]
+console.log("TOKEN:", token);
 
 if(!token){
   return res.status(401).json({message: "unauthorized"});
@@ -59,7 +60,7 @@ next()
 async function run() {
   try {
     
-    await client.connect();
+    // await client.connect();
     const db = client.db("MediQueue")
 // destinationCollection=tutorCollection
     const tutorCollection = db.collection("tutors")
@@ -67,10 +68,10 @@ async function run() {
     // const myTutorCollection = db.collection("myTutors")
 
   
-app.get('/tutor', async (req, res) => {
-  const result = await tutorCollection.find().toArray()
-  res.json(result);
-})
+// app.get('/tutor', async (req, res) => {
+//   const result = await tutorCollection.find().toArray()
+//   res.json(result);
+// })
 
     
     app.post('/tutor',async (req,res)=>{
@@ -145,14 +146,25 @@ app.delete('/booking/:bookingId',verifyToken, async (req, res) => {
 ///................... my tutor .................
 
 // 
-app.get("/tutor/user/:userId", async (req, res) => {
+// app.get("/tutor/user/:userId",verifyToken, async (req, res) => {
+//   const { userId } = req.params;
+
+//   const result = await tutorCollection.find({ userId }).toArray();
+
+//   res.json(result);
+// });
+
+app.get("/tutor/user/:userId", verifyToken, async (req, res) => {
   const { userId } = req.params;
+
+  console.log("PARAM USER ID:", userId);
 
   const result = await tutorCollection.find({ userId }).toArray();
 
+  console.log("RESULT:", result);
+
   res.json(result);
 });
-
 
 
 // ---------slot--------------
@@ -208,7 +220,31 @@ app.patch("/tutor/slot/:id", async (req, res) => {
 
 
 
-    await client.db("admin").command({ ping: 1 });
+// search.........
+
+app.get("/tutor", async (req, res) => {
+
+  const search = req.query.search || "";
+
+  let query = {};
+
+  if (search) {
+    query.TutorName = {
+      $regex: search,
+      $options: "i",
+    };
+  }
+
+  const result = await tutorCollection.find(query).toArray();
+
+  res.json(result);
+});
+
+
+
+
+
+    // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
