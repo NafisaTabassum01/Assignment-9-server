@@ -131,16 +131,32 @@ app.get("/booking/:userId", verifyToken, async (req, res) => {
 })
 
 
-app.delete('/booking/:bookingId',verifyToken, async (req, res) => {
+// app.delete('/booking/:bookingId',verifyToken, async (req, res) => {
+
+//   const { bookingId } = req.params;
+//   const result = await bookingCollection.deleteOne({
+//     _id: new ObjectId(bookingId)
+//   });
+
+//   res.json(result);
+// });
+
+
+app.patch('/booking/:bookingId', verifyToken, async (req, res) => {
 
   const { bookingId } = req.params;
-  const result = await bookingCollection.deleteOne({
-    _id: new ObjectId(bookingId)
-  });
+
+  const result = await bookingCollection.updateOne(
+    { _id: new ObjectId(bookingId) },
+    {
+      $set: {
+        status: "cancelled",
+      },
+    }
+  );
 
   res.json(result);
 });
-
 
 app.get("/featured" , async(req,res)=>{
   const result = await tutorCollection.find().limit(6).toArray()
