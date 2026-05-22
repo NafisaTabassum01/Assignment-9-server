@@ -142,6 +142,11 @@ app.delete('/booking/:bookingId',verifyToken, async (req, res) => {
 });
 
 
+app.get("/featured" , async(req,res)=>{
+  const result = await tutorCollection.find().limit(6).toArray()
+  res.json(result)
+})
+
 
 ///................... my tutor .................
 
